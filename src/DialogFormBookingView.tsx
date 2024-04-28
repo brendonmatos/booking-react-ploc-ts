@@ -121,10 +121,19 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
             name="range"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Choose the period</FormLabel>
-                <FormDescription>
-                  Select the start and end date for the booking.
-                </FormDescription>
+
+                <div className="flex justify-between">
+                  <div>
+                  <FormLabel>
+                    Choose the period
+                  </FormLabel>
+                  <FormDescription>
+                    Select the start and end date for the booking.
+                  </FormDescription>
+                </div>
+
+                <Button type="button" variant="outline" onClick={() => field.onChange([null, null])}>Reset</Button>
+                </div>
                 <FormControl>
                   <CalendarInput
                     initialFocus
