@@ -11,7 +11,7 @@ interface ExamplesLayoutProps {
 export default function Layout({ children }: ExamplesLayoutProps) {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="hidden flex-col md:flex">
+      <div className="flex-col flex">
         <div className="border-b">
           <div className="flex h-16 items-center px-4">
             <Button
