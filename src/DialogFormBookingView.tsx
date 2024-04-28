@@ -5,7 +5,8 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
+  useFormField
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,13 +32,14 @@ import { useToast } from "./components/ui/use-toast";
 
 
 export const formSchema = z.object({
-  personName: z.string(),
+  personName: z.string().min(2),
   range: z.object({
     from: z.date(),
     to: z.date(),
-  }).refine(data => data.from < data.to, {
-    message: 'The start date must be before the end date',
-  })
+  }).refine(({ from, to }) => from < to, {
+    message: 'The end date must be after the start date',
+    path: ['range'],
+  }),
 })
 
 
@@ -86,7 +88,12 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
     })
   };
 
-  return <Dialog open={open} onOpenChange={onSetOpenState}>
+  const handleOnOpenChange = (open: boolean) => {
+    onSetOpenState(open);
+    form.reset();
+  }
+
+  return <Dialog open={open} onOpenChange={handleOnOpenChange}>
     <DialogContent className="w-full md:w-fit  overflow-y-auto max-h-screen">
       <DialogHeader>
         <DialogTitle>
@@ -105,6 +112,7 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
                 <FormControl>
                   <Input id="personName" placeholder="John Doe" {...field} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )} />
           </div>
@@ -139,9 +147,9 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
                       ));
                     }} />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )} />
+          
           <DialogFooter>
             <Button type="submit">Save</Button>
           </DialogFooter>
