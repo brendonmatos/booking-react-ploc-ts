@@ -1,21 +1,21 @@
-import { BookingNotFoundError, InvalidDateError } from "../exceptions";
+import { BookingNotFoundError } from "../exceptions";
 import { Booking } from "../entity/Booking";
-import { TheHotelRoom } from "../entity/TheHotelRoom";
 import { EditBookingDto } from "./EditBookingDto";
+import { ReservationsService } from "../services/ReservationsService";
 
 
 export class EditBooking {
   constructor(
-    private theHotelRoom: TheHotelRoom
+    private reservationService: ReservationsService,
   ) { }
 
   execute(editBookingDto: EditBookingDto) {
     const booking = new Booking(editBookingDto.id, editBookingDto.personName, editBookingDto.dateStart, editBookingDto.dateEnd); 
 
-    if (!this.theHotelRoom.calendar.existsBooking(booking)) {
+    if (!this.reservationService.findBookingById(booking.id)) {
       throw new BookingNotFoundError();
     }
 
-    this.theHotelRoom.calendar.saveBooking(booking);
+    this.reservationService.saveBooking(booking);
   }
 }

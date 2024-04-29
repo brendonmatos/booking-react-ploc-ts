@@ -1,41 +1,250 @@
 import { DateOverlapError } from "./domain/exceptions"
-import { Booking } from "./domain/entity/Booking"
-import { Calendar } from "./domain/entity/Calendar"
-import { test, expect } from 'vitest'
+import { test, expect, describe, vi } from 'vitest'
+import { MemoryReservationsService } from "./infra/MemoryReservationsService"
+import { CreateBooking } from "./domain/usecases/SaveBooking"
+import { CheckCalendarDisableBooking } from "./domain/usecases/CheckCalendarDisableBooking"
+import { ReservationsService } from "./domain/services/ReservationsService"
+import { ListBookings } from "./domain/usecases/ListBookings"
+
+
+test('should edit booking without overlaping with itself', () => {
+  const reservationService = new MemoryReservationsService()
+  const saveBooking = new CreateBooking(reservationService)
+  saveBooking.execute({
+    dateStart: new Date('2024-01-01'),
+    dateEnd: new Date('2024-01-02'),
+    personName: 'HeyMan',
+    id: '1'
+  })
+  saveBooking.execute({
+    dateStart: new Date('2024-01-03'),
+    dateEnd: new Date('2024-01-04'),
+    personName: 'HeyMan',
+    id: '1'
+  })
+  expect(reservationService.listBookings().get()).toEqual([
+    {
+      id: '1',
+      dateStart: new Date('2024-01-03'),
+      dateEnd: new Date('2024-01-04'),
+      personName: 'HeyMan'
+    }
+  ])
+})
+
 
 test('should save booking when there is no conflict', () => {
-  const calendar = new Calendar()
-  const booking1 = new Booking('1', 'HeyMan', new Date('2024-01-01'), new Date('2024-01-02'))
-  const booking2 = new Booking('2', 'HeyMan', new Date('2024-01-03'), new Date('2024-01-04'))
-  calendar.saveBooking(booking1)
-  calendar.saveBooking(booking2)
-  expect(calendar.bookings).toEqual([booking1, booking2])
+  const reservationService = new MemoryReservationsService()
+  const saveBooking = new CreateBooking(reservationService)
+  saveBooking.execute({
+    dateStart: new Date('2024-01-01'),
+    dateEnd: new Date('2024-01-02'),
+    personName: 'HeyMan',
+    id: '1'
+  })
+  saveBooking.execute({
+    dateStart: new Date('2024-01-03'),
+    dateEnd: new Date('2024-01-04'),
+    personName: 'HeyMan',
+    id: '2'
+  })
+
+  expect(reservationService.listBookings().get()).toEqual([
+    {
+      id: '1',
+      dateStart: new Date('2024-01-01'),
+      dateEnd: new Date('2024-01-02'),
+      personName: 'HeyMan'
+    },
+    {
+      id: '2',
+      dateStart: new Date('2024-01-03'),
+      dateEnd: new Date('2024-01-04'),
+      personName: 'HeyMan'
+    }
+  ])
 })
 
 test('should not save booking when there is conflict', () => {
-  const calendar = new Calendar()
-  const booking1 = new Booking('1', 'HeyMan', new Date('2024-01-01'), new Date('2024-01-02'))
-  const booking2 = new Booking('2', 'HeyMan', new Date('2024-01-02'), new Date('2024-01-03'))
-  calendar.saveBooking(booking1)
-  expect(() => calendar.saveBooking(booking2)).toThrow(new DateOverlapError())
+  const reservationService = new MemoryReservationsService()
+  const saveBooking = new CreateBooking(reservationService)
+  saveBooking.execute({
+    dateStart: new Date('2024-01-01'),
+    dateEnd: new Date('2024-01-02'),
+    personName: 'HeyMan',
+    id: '1'
+  })
+  expect(() => saveBooking.execute({
+    dateStart: new Date('2024-01-02'),
+    dateEnd: new Date('2024-01-03'),
+    personName: 'HeyMan',
+    id: '2'
+  })).toThrow(new DateOverlapError())
 })
 
 test('should remove booking', () => {
-  const calendar = new Calendar()
-  const booking1 = new Booking('1', 'HeyMan', new Date('2024-01-01'), new Date('2024-01-02'))
-  const booking2 = new Booking('2', 'HeyMan', new Date('2024-01-03'), new Date('2024-01-04'))
-  calendar.saveBooking(booking1)
-  calendar.saveBooking(booking2)
-  calendar.removeBooking(booking1)
-  expect(calendar.bookings).toEqual([booking2])
+  const reservationService = new MemoryReservationsService()
+  const saveBooking = new CreateBooking(reservationService)
+  saveBooking.execute({
+    dateStart: new Date('2024-01-01'),
+    dateEnd: new Date('2024-01-02'),
+    personName: 'HeyMan',
+    id: '1'
+  })
+  saveBooking.execute({
+    dateStart: new Date('2024-01-03'),
+    dateEnd: new Date('2024-01-04'),
+    personName: 'HeyMan',
+    id: '2'
+  })
+  reservationService.removeBooking('1')
 })
 
-test('should edit booking without overlaping with itself', () => {
-  const calendar = new Calendar()
-  const booking1 = new Booking('1', 'HeyMan', new Date('2024-01-01'), new Date('2024-01-02'))
-  const booking2 = new Booking('1', 'HeyMan', new Date('2024-01-03'), new Date('2024-01-04'))
-  calendar.saveBooking(booking1)
-  calendar.saveBooking(booking2)
-  expect(calendar.bookings).toEqual([booking2])
+function helpCreateBookings (reservationService: ReservationsService, dates: { start: Date, end: Date }[]) {
+  for (const date of dates) {
+    reservationService.saveBooking({
+      dateEnd: date.end,
+      dateStart: date.start,
+      personName: 'HeyMan',
+      id: reservationService.getNextReservationCode()
+    })
+  }
+}
+
+
+describe('CheckCalendarDisableBooking usecase', () => {
+  test('should return if a date is disallowed', () => {
+    const reservationService = new MemoryReservationsService()
+
+    helpCreateBookings(reservationService, [
+      { start: new Date('2024-05-01'), end: new Date('2024-05-02') },
+      { start: new Date('2024-05-05'), end: new Date('2024-05-06') }
+    ])
+
+    const checkCalendarDisableBooking = new CheckCalendarDisableBooking(reservationService)
+    
+    // Calendar
+    // 05/01 - 05/02 - 05/03 - 05/04 - 05/05 - 05/06 - 05/07 - 05/08 - 05/09
+    //  o      o       x       x       o       o       x       x       x
+
+    helpCheckDisabled(checkCalendarDisableBooking, {
+      '2024-05-01': true,
+      '2024-05-02': true,
+      '2024-05-03': false,
+      '2024-05-04': false,
+      '2024-05-05': true,
+      '2024-05-06': true,
+      '2024-05-07': false,
+      '2024-05-08': false,
+      '2024-05-09': false,
+    })
+
+    // Calendar
+    // 05/01 - 05/02 - 05/03 - 05/04 - 05/05 - 05/06 - 05/07 - 05/08 - 05/09
+    //  x      x       ->      o       x       x       x       x       x 
+
+    helpCheckDisabled(checkCalendarDisableBooking, {
+      '2024-05-01': true,
+      '2024-05-02': true,
+      '2024-05-03': false,
+      '2024-05-04': false,
+      '2024-05-05': true,
+      '2024-05-06': true,
+      '2024-05-07': true,
+      '2024-05-08': true,
+      '2024-05-09': true,
+    }, new Date('2024-05-03'))
+
+    // Calendar 
+    // 05/01 - 05/02 - 05/03 - 05/04 - 05/05 - 05/06 - 05/07 - 05/08 - 05/09 - 05/10
+    //  x      x       x       x       x       x       o       o       o       ->
+
+    helpCheckDisabled(checkCalendarDisableBooking, {
+      '2024-05-01': true,
+      '2024-05-02': true,
+      '2024-05-03': true,
+      '2024-05-04': true,
+      '2024-05-05': true,
+      '2024-05-06': true,
+      '2024-05-07': false,
+      '2024-05-08': false,
+      '2024-05-09': false,
+    }, new Date('2024-05-10'))
+  })
 })
+
+describe('ListBookings reactive usecase', () => {
+  test('should list bookings', () => {
+    const reservationService = new MemoryReservationsService()
+    helpCreateBookings(reservationService, [
+      { start: new Date('2024-05-01'), end: new Date('2024-05-02') },
+      { start: new Date('2024-05-05'), end: new Date('2024-05-06') }
+    ])
+
+    const listBookings = new ListBookings(reservationService)
+
+    const bookingsReative = listBookings.execute()
+
+    expect(bookingsReative.get()).toEqual([
+      expect.objectContaining(
+      {
+        dateStart: new Date('2024-05-01'),
+        dateEnd: new Date('2024-05-02'),
+        personName: 'HeyMan',
+      }),
+      expect.objectContaining({
+        dateStart: new Date('2024-05-05'),
+        dateEnd: new Date('2024-05-06'),
+        personName: 'HeyMan',
+      })
+    ])
+
+    const fn = vi.fn()
+
+    bookingsReative.subscribe(fn)
+
+    reservationService.saveBooking({
+      dateStart: new Date('2024-05-07'),
+      dateEnd: new Date('2024-05-08'),
+      personName: 'HeyMan',
+      id: '3'
+    })
+
+    expect(fn).toHaveBeenCalledTimes(1)
+    expect(fn).toHaveBeenCalledWith([
+      expect.objectContaining({
+        dateStart: new Date('2024-05-01'),
+        dateEnd: new Date('2024-05-02'),
+        personName: 'HeyMan',
+      }),
+      expect.objectContaining({
+        dateStart: new Date('2024-05-05'),
+        dateEnd: new Date('2024-05-06'),
+        personName: 'HeyMan',
+      }),
+      expect.objectContaining({
+        dateStart: new Date('2024-05-07'),
+        dateEnd: new Date('2024-05-08'),
+        personName: 'HeyMan',
+      })
+    ])
+
+
+  })
+})
+
+function helpCheckDisabled (checkCalendarDisableBooking: CheckCalendarDisableBooking, expected: {
+  [date: string]: boolean
+}, startBookingDate?: Date) {
+
+  const newObject: { [date: string]: boolean } = {}
+  for (const date in expected) {
+    newObject[date] = checkCalendarDisableBooking.execute({
+      checkDate: new Date(date),
+      startBookingDate,
+    })
+  }
+
+  expect(newObject).toMatchObject(expected)
+}
 

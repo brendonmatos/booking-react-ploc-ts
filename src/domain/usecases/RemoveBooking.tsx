@@ -1,18 +1,18 @@
 import { Booking } from "../entity/Booking";
-import { TheHotelRoom } from "../entity/TheHotelRoom";
 import { BookingNotFoundError } from "../exceptions";
+import { ReservationsService } from "../services/ReservationsService";
 
 
 export class RemoveBooking {
   constructor(
-    private theHotelRoom: TheHotelRoom
+    private reservationsService: ReservationsService,
   ) { }
 
   execute(booking: Booking) {
-    if (!this.theHotelRoom.calendar.existsBooking(booking)) {
+    if (!this.reservationsService.findBookingById(booking.id)) {
       throw new BookingNotFoundError();
     }
 
-    this.theHotelRoom.calendar.removeBooking(booking);
+    this.reservationsService.removeBooking(booking.id);
   }
 }

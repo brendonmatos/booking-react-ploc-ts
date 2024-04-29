@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { DialogFormBookingContext } from "./DialogFormBookingContext";
-import { Booking } from "./domain/entity/Booking";
-import { DialogFormBookingView } from "./DialogFormBookingView";
+import React, {useState, createContext} from "react";
+import { Booking } from "../domain/entity/Booking";
+import { DialogFormBookingView } from "@/components/dialog-form-booking-view"
 
 export function DialogFormBookingViewProvider({ children }: { children: React.ReactNode; }) {
   const [open, setOpen] = useState(false);
@@ -23,4 +22,21 @@ export function DialogFormBookingViewProvider({ children }: { children: React.Re
       {children}
     </DialogFormBookingContext.Provider>
   );
+}
+
+export const DialogFormBookingContext = createContext<{
+  openEditBooking: (booking: Booking) => void;
+  openCreateBooking: () => void;
+} | null>(null);
+
+export type BookingsListProps = {
+  items: Booking[];
+};
+
+export function useDialogFormBooking() {
+  const context = React.useContext(DialogFormBookingContext);
+  if (!context) {
+    throw new Error('useDialogFormBooking must be used within a DialogFormBookingProvider');
+  }
+  return context;
 }

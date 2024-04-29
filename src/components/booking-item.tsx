@@ -1,14 +1,14 @@
 import { ArrowRight as ArrowRightIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
-import { cn } from "./lib/utils";
-import { formatDateToHuman } from "./formatDateToHuman";
-import { Booking } from "./domain/entity/Booking";
-import { Button } from "./components/ui/button";
+import { cn } from "../lib/utils";
+import { formatDateToHuman } from "../lib/formatDateToHuman";
+import { Booking } from "../domain/entity/Booking";
+import { Button } from "./ui/button";
 import { TrashIcon, MoreVerticalIcon } from "lucide-react"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./components/ui/dropdown-menu";
-import { RemoveBooking } from "./domain/usecases/RemoveBooking";
-import { theHotelRoom } from "./state";
-import { useToast } from "./components/ui/use-toast";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
+import { RemoveBooking } from "../domain/usecases/RemoveBooking";
+import { useToast } from "./ui/use-toast";
+import { reservationsService } from "../store/state";
 
 
 export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: () => void; }) {
@@ -16,7 +16,7 @@ export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: 
   const {toast} = useToast()
 
   const handleDelete = () => {
-    const removeBooking = new RemoveBooking(theHotelRoom)
+    const removeBooking = new RemoveBooking(reservationsService)
     removeBooking.execute(booking)
     toast({
       title: "Booking deleted",

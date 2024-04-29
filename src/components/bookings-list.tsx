@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusIcon } from "lucide-react";
 import { Fragment } from "react";
-import { BookingItem } from "./BookingItem";
-import { ListBookingsProps, useDialogFormBooking } from "./DialogFormBookingContext";
+import { BookingItem } from "./booking-item";
+import { BookingsListProps, useDialogFormBooking } from "@/context/booking-dialog";
 
-export function ListBookings({ items }: ListBookingsProps) {
+export function BookingsList({ items }: BookingsListProps) {
 
   const { openCreateBooking, openEditBooking } = useDialogFormBooking();
 

@@ -6,16 +6,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  useFormField
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { addDays } from "date-fns";
-import { Calendar as CalendarInput } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +15,23 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { Booking } from "./domain/entity/Booking";
-import { EditBooking } from "./domain/usecases/EditBooking";
-import { CreateBooking } from "./domain/usecases/CreateBooking";
-import { reservationsService, theHotelRoom } from "./state";
-import { useToast } from "./components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Calendar as CalendarInput } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Booking } from "@/domain/entity/Booking";
+import { EditBooking } from "@/domain/usecases/EditBooking";
+import { CreateBooking } from "@/domain/usecases/SaveBooking";
+import { reservationsService } from "@/store/state";
+import { useToast } from "@/components/ui/use-toast";
+import { CheckCalendarDisableBooking } from "@/domain/usecases/CheckCalendarDisableBooking";
 
+const editBooking = new EditBooking(reservationsService);
+const createBooking = new CreateBooking(reservationsService);
+const checkCalendarDisableBooking = new CheckCalendarDisableBooking(reservationsService);
 
 export const formSchema = z.object({
   personName: z.string().min(2),
@@ -41,7 +43,6 @@ export const formSchema = z.object({
     path: ['range'],
   }),
 })
-
 
 export function DialogFormBookingView({ open, booking, onSetOpenState }: { open: boolean; onSetOpenState: (open: boolean) => void; booking?: Booking; }) {
 
@@ -59,38 +60,48 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
   });
 
   const onSubmit = () => {
+
+    const bookingData = {
+      personName: form.getValues('personName'),
+      dateStart: form.getValues('range').from,
+      dateEnd: form.getValues('range').to,
+    }
+
     if (booking) {
-      const editBooking = new EditBooking(theHotelRoom);
       editBooking.execute({
         id: booking.id,
-        personName: form.getValues('personName'),
-        dateStart: form.getValues('range').from,
-        dateEnd: form.getValues('range').to,
+        ...bookingData,
       });
-      onSetOpenState(false)
+    } else {
+      createBooking.execute(bookingData);
+    }
+
+    handleOnOpenChange(false)
+
+    if (booking) { 
       toast({
         title: 'Booking saved',
         description: 'The booking was successfully saved',
       })
-      return;
+    } else {
+      toast({
+        title: 'Booking created',
+        description: 'The booking was successfully created',
+      })
     }
-
-    const createBooking = new CreateBooking(reservationsService, theHotelRoom);
-    createBooking.execute({
-      personName: form.getValues('personName'),
-      dateStart: form.getValues('range').from,
-      dateEnd: form.getValues('range').to,
-    });
-    onSetOpenState(false)
-    toast({
-      title: 'Booking created',
-      description: 'The booking was successfully created',
-    })
   };
 
   const handleOnOpenChange = (open: boolean) => {
     onSetOpenState(open);
     form.reset();
+  }
+
+  const handleCheckDateIsEnabled = (date: Date) => {
+    return checkCalendarDisableBooking.execute({
+      checkDate: date,
+      startBookingDate: form.getValues('range').from,
+      bookingId: booking?.id,
+    });
   }
 
   return <Dialog open={open} onOpenChange={handleOnOpenChange}>
@@ -121,7 +132,6 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
             name="range"
             render={({ field }) => (
               <FormItem>
-
                 <div className="flex justify-between">
                   <div>
                   <FormLabel>
@@ -131,7 +141,6 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
                     Select the start and end date for the booking.
                   </FormDescription>
                 </div>
-
                 <Button type="button" variant="outline" onClick={() => field.onChange([null, null])}>Reset</Button>
                 </div>
                 <FormControl>
@@ -142,19 +151,7 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
                     selected={field.value}
                     onSelect={field.onChange}
                     numberOfMonths={2}
-                    checkDisabled={(date) => {
-                      const isAfterToday = date > addDays(new Date(), 1);
-                      const tempBooking = new Booking('temp', form.getValues('personName'), date, date);
-                      const isDayFree = theHotelRoom.calendar.verifyAvailabilityFor(tempBooking);
-                      const isAfterAnyBooking = theHotelRoom.calendar.dateIsAfterAnyBookingAfterDate(date, field.value.from);
-                      const isBeforeAnyBooking = theHotelRoom.calendar.dateIsBeforeAnyBookingBeforeDate(date, field.value.from);
-
-                      const isSelectedFirstDate = Boolean(field.value.from);
-
-                      return !isDayFree || !isAfterToday || (isSelectedFirstDate && (
-                        isAfterAnyBooking || isBeforeAnyBooking
-                      ));
-                    }} />
+                    checkDisabled={handleCheckDateIsEnabled} />
                 </FormControl>
               </FormItem>
             )} />
