@@ -6,6 +6,13 @@
 - Typescript
 - Ploc
 
+## Running project
+
+![video](./src/assets/Bookings.gif)]
+
+## Running project tests
+
+![image](./src/assets/BookingsTest.png)]
 
 ## Architecture
 
@@ -23,4 +30,4 @@ The layers are:
 
   - **Use cases**: This is where the business rules are defined. They are simple classes that contain methods that perform some action in the application.
 
-  - **Service**: This layer is responsible for the communication with external services. It contains the interfaces that define the methods that the services should implement.
+  - **Service**: This layer is responsible for the communication with external services. It contains the interfaces that define the methods that the services should implement. But, in the moment, it just contains memory implementation.

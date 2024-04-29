@@ -9,13 +9,18 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { RemoveBooking } from "../domain/usecases/RemoveBooking";
 import { useToast } from "./ui/use-toast";
 import { reservationsService } from "../store/state";
+import { MouseEventHandler } from "react";
 
+const handleAndDoNothing: MouseEventHandler<any> = (event) => {
+  event.stopPropagation()
+}
 
 export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: () => void; }) {
-
+  
   const {toast} = useToast()
 
-  const handleDelete = () => {
+  const handleDelete: MouseEventHandler<any> = (event) => {
+    handleAndDoNothing(event)
     const removeBooking = new RemoveBooking(reservationsService)
     removeBooking.execute(booking)
     toast({
@@ -34,7 +39,7 @@ export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: 
       <div className="flex items-center">
         <div className="flex items-center gap-2">
           <div className="font-semibold space-x-2">
-            <span className="font-mono border py-1 px-2 rounded bg-slate-900">#{booking.id}</span>
+            <span className="font-mono border py-1 px-2 rounded dark:bg-slate-900">#{booking.id}</span>
             <span>{booking.personName}</span>
           </div> 
         </div>
@@ -50,14 +55,12 @@ export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: 
         </div>
       </div>
       <div className="flex justify-between">
-      
-      
         <div className="text-xs font-medium flex items-center gap-1">
           {formatDateToHuman(booking.dateStart)}
           <ArrowRightIcon className="w-4 h-4" />
           {formatDateToHuman(booking.dateEnd)}
         </div>
-      
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -68,7 +71,7 @@ export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: 
           <DropdownMenuContent align="end">
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <DropdownMenuItem >
+            <DropdownMenuItem>
               <TrashIcon className="h-4 w-4 mr-2" />
               Delete
             </DropdownMenuItem>
@@ -77,14 +80,13 @@ export function BookingItem({ booking, onClick }: { booking: Booking; onClick?: 
             <DropdownMenuItem onClick={handleDelete}>
               Confirm
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleAndDoNothing}>
               Cancel
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
           </DropdownMenuContent>
         </DropdownMenu>
-        
       </div>
     </div>
   </button>;
