@@ -1,4 +1,4 @@
-import { ReservationsService } from "../src/domain/services/ReservationsService";
+import type { ReservationsService } from "../src/domain/services/ReservationsService";
 import { Place } from "../src/domain/entity/Calendar";
 import { expect } from "vitest";
 

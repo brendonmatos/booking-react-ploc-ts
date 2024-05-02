@@ -1,7 +1,5 @@
-import { format } from "date-fns"
+import { format } from "date-fns";
 
 export function formatDateToHuman(date: Date) {
-  return format(date, 'dd/MM/yyyy');
+	return format(date, "dd/MM/yyyy");
 }
-
-

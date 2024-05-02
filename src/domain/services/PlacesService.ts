@@ -1,8 +1,6 @@
-import { Place } from "../entity/Calendar";
+import type { Place } from "../entity/Calendar";
 
 export interface PlacesService {
-  getById(id: string): Place;
-  list(): Place[]
+	getById(id: string): Place;
+	list(): Place[];
 }
-
-

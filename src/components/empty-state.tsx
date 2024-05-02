@@ -1,17 +1,20 @@
 import { Calendar } from "lucide-react";
 
 export type PodcastEmptyPlaceholderProps = {
-  title: string;
-  description: string;
-  children?: React.ReactNode;
-}
+	title: string;
+	description: string;
+	children?: React.ReactNode;
+};
 
-
-export function EmptyState({ title, description, children }: PodcastEmptyPlaceholderProps) {
-  return (
-    <div className="flex h-[450px] shrink-0 items-center justify-center rounded-md border border-dashed">
-      <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
-        {/* <svg
+export function EmptyState({
+	title,
+	description,
+	children,
+}: PodcastEmptyPlaceholderProps) {
+	return (
+		<div className="flex h-[450px] shrink-0 items-center justify-center rounded-md border border-dashed">
+			<div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
+				{/* <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           stroke="currentColor"
@@ -26,15 +29,13 @@ export function EmptyState({ title, description, children }: PodcastEmptyPlaceho
           <path d="M17 18.5a9 9 0 1 0-10 0" />
         </svg> */}
 
-        <Calendar className="h-10 w-10 text-muted-foreground" />
+				<Calendar className="h-10 w-10 text-muted-foreground" />
 
-        <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-        <p className="mb-4 mt-2 text-sm text-muted-foreground">
-          {description}
-        </p>
+				<h3 className="mt-4 text-lg font-semibold">{title}</h3>
+				<p className="mb-4 mt-2 text-sm text-muted-foreground">{description}</p>
 
-        {children}
-      </div>
-    </div>
-  )
+				{children}
+			</div>
+		</div>
+	);
 }

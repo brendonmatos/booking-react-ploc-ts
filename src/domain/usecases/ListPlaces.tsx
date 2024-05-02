@@ -1,11 +1,9 @@
-import { PlacesService } from "../services/PlacesService";
+import type { PlacesService } from "../services/PlacesService";
 
 export class ListPlaces {
-  constructor(
-    private placesService: PlacesService,
-  ) { }
+	constructor(private placesService: PlacesService) {}
 
-  execute() {
-    return this.placesService.list()
-  }
+	execute() {
+		return this.placesService.list();
+	}
 }

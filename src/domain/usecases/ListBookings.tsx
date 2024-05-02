@@ -1,11 +1,9 @@
-import { ReservationsService } from "../services/ReservationsService";
+import type { ReservationsService } from "../services/ReservationsService";
 
-export class ListBookings{
-  constructor(
-    private reservationsService: ReservationsService,
-  ) { }
+export class ListBookings {
+	constructor(private reservationsService: ReservationsService) {}
 
-  execute(placeId: string) {
-    return this.reservationsService.listBookings(placeId);
-  }
+	execute(placeId: string) {
+		return this.reservationsService.listBookings(placeId);
+	}
 }
