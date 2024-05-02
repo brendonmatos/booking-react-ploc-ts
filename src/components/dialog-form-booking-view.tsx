@@ -22,15 +22,15 @@ import { z } from "zod";
 import { Calendar as CalendarInput } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Booking } from "@/domain/entity/Booking";
 import { EditBooking } from "@/domain/usecases/EditBooking";
 import { CreateBooking } from "@/domain/usecases/SaveBooking";
-import { reservationsService } from "@/store/state";
+import { placesService, reservationsService } from "@/store/state";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckCalendarDisableBooking } from "@/domain/usecases/CheckCalendarDisableBooking";
+import { useDialogFormBooking } from "@/context/booking-dialog";
 
-const editBooking = new EditBooking(reservationsService);
-const createBooking = new CreateBooking(reservationsService);
+const editBooking = new EditBooking(reservationsService, placesService);
+const createBooking = new CreateBooking(reservationsService, placesService);
 const checkCalendarDisableBooking = new CheckCalendarDisableBooking(reservationsService);
 
 export const formSchema = z.object({
@@ -44,17 +44,18 @@ export const formSchema = z.object({
   }),
 })
 
-export function DialogFormBookingView({ open, booking, onSetOpenState }: { open: boolean; onSetOpenState: (open: boolean) => void; booking?: Booking; }) {
+export function DialogFormBookingView() {
 
   const { toast } = useToast()
+  const { dialog, closeDialog }  = useDialogFormBooking()
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      personName: booking?.personName ?? '',
+      personName: dialog.booking?.personName ?? '',
       range: {
-        from: booking?.dateStart,
-        to: booking?.dateEnd,
+        from: dialog.booking?.dateStart,
+        to: dialog.booking?.dateEnd,
       },
     },
   });
@@ -65,11 +66,12 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
       personName: form.getValues('personName'),
       dateStart: form.getValues('range').from,
       dateEnd: form.getValues('range').to,
+      placeId: dialog.place!.id,
     }
 
-    if (booking) {
+    if (dialog.booking) {
       editBooking.execute({
-        id: booking.id,
+        id: dialog.booking.id,
         ...bookingData,
       });
     } else {
@@ -78,7 +80,7 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
 
     handleOnOpenChange(false)
 
-    if (booking) { 
+    if (dialog.booking) { 
       toast({
         title: 'Booking saved',
         description: 'The booking was successfully saved',
@@ -92,26 +94,28 @@ export function DialogFormBookingView({ open, booking, onSetOpenState }: { open:
   };
 
   const handleOnOpenChange = (open: boolean) => {
-    onSetOpenState(open);
-    form.reset();
+    if (!open) {
+      closeDialog();
+      form.reset();
+    }
   }
 
   const handleCheckDateIsEnabled = (date: Date) => {
     return checkCalendarDisableBooking.execute({
       checkDate: date,
       startBookingDate: form.getValues('range').from,
-      bookingId: booking?.id,
+      bookingId: dialog.booking?.id,
     });
   }
 
-  return <Dialog open={open} onOpenChange={handleOnOpenChange}>
+  return <Dialog open={dialog.open} onOpenChange={handleOnOpenChange}>
     <DialogContent className="w-full md:w-fit  overflow-y-auto max-h-screen">
       <DialogHeader>
         <DialogTitle>
-          {booking ? 'Edit booking' : 'Create booking'}
+          {dialog.booking ? 'Edit booking' : 'Create booking'}
         </DialogTitle>
         <DialogDescription>
-          {booking ? 'Edit the booking details' : 'Fill in the form to create a new booking'}
+          {dialog.booking ? 'Edit the booking details' : 'Fill in the form to create a new booking'}
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>

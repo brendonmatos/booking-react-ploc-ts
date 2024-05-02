@@ -33,11 +33,10 @@ export default function Layout({ children }: ExamplesLayoutProps) {
           </div>
         </div>
         <div className="flex-1 space-y-4 p-8 pt-6">
-        
-          <section>
-              {children}
+          <section className="max-w-5xl mx-auto">
+            {children}
           </section>
-          </div>
+        </div>
       </div>
     </ThemeProvider>    
   )
