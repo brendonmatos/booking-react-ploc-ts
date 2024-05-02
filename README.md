@@ -8,11 +8,23 @@
 
 ## Running project
 
-<img src="./src/assets/Bookings.gif" width=400>
+
+### Functionalities
+
+https://github.com/brendonmatos/booking-react-ploc-ts/assets/11252654/58479d09-d293-4be3-946a-7eb4769ba77a
+
+### Responsivity
+
+https://github.com/brendonmatos/booking-react-ploc-ts/assets/11252654/e96b8f52-503f-432e-b613-eabb7ed081f2
+
+
+
+
 
 ## Running project tests
 
-<img src="./src/assets/BookingsTest.png">
+![image](https://github.com/brendonmatos/booking-react-ploc-ts/assets/11252654/88166976-7226-4c42-83d3-8c2f54ebebd8)
+
 
 ## Architecture
 
