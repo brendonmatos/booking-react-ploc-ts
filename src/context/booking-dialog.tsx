@@ -1,37 +1,31 @@
 import React, {useState, createContext} from "react";
 import { Booking } from "../domain/entity/Booking";
 import { DialogFormBookingView } from "@/components/dialog-form-booking-view"
+import { Place } from "@/domain/entity/Calendar";
 
-export function DialogFormBookingViewProvider({ children }: { children: React.ReactNode; }) {
-  const [open, setOpen] = useState(false);
-  const [booking, setBooking] = useState<Booking | undefined>(undefined);
+
+export function useBookingDialogState(place: Place) {
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    booking: Booking | undefined;
+    place: Place | undefined;
+  }>({ open: false, booking: undefined, place: undefined });
 
   const openEditBooking = (booking: Booking) => {
-    setBooking(booking);
-    setOpen(true);
+    setDialog({ open: true, booking, place });
   };
 
   const openCreateBooking = () => {
-    setBooking(undefined);
-    setOpen(true);
+    setDialog({ open: true, booking: undefined, place });
   };
 
-  return (
-    <DialogFormBookingContext.Provider value={{ openEditBooking, openCreateBooking }}>
-      <DialogFormBookingView open={open} booking={booking} onSetOpenState={setOpen} key={booking?.id} />
-      {children}
-    </DialogFormBookingContext.Provider>
-  );
+  const closeDialog = () => {
+    setDialog({ open: false, booking: undefined, place });
+  }
+
+  return { dialog, openEditBooking, openCreateBooking, closeDialog };
+
 }
-
-export const DialogFormBookingContext = createContext<{
-  openEditBooking: (booking: Booking) => void;
-  openCreateBooking: () => void;
-} | null>(null);
-
-export type BookingsListProps = {
-  items: Booking[];
-};
 
 export function useDialogFormBooking() {
   const context = React.useContext(DialogFormBookingContext);
@@ -40,3 +34,18 @@ export function useDialogFormBooking() {
   }
   return context;
 }
+
+
+export function DialogFormBookingViewProvider({ children, place }: { children: React.ReactNode, place: Place }) {
+
+  const dialogState = useBookingDialogState(place);
+
+  return (
+    <DialogFormBookingContext.Provider value={dialogState}>
+      <DialogFormBookingView key={dialogState.dialog.booking?.id} />
+      {children}
+    </DialogFormBookingContext.Provider>
+  );
+}
+
+export const DialogFormBookingContext = createContext<ReturnType<typeof useBookingDialogState> | undefined>(undefined);

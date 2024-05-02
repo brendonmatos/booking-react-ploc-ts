@@ -5,97 +5,120 @@ import { CreateBooking } from "./domain/usecases/SaveBooking"
 import { CheckCalendarDisableBooking } from "./domain/usecases/CheckCalendarDisableBooking"
 import { ReservationsService } from "./domain/services/ReservationsService"
 import { ListBookings } from "./domain/usecases/ListBookings"
+import { MemoryPlacesService } from "./infra/MemoryPlacesService"
+import { Place } from "./domain/entity/Calendar"
 
+// TODO: mock the DATE!!!!!
 
 test('should edit booking without overlaping with itself', () => {
   const reservationService = new MemoryReservationsService()
-  const saveBooking = new CreateBooking(reservationService)
+  const placesService = new MemoryPlacesService([
+    new Place('1', 'Place 1', [], 'https://via.placeholder.com/150', 200)
+  ])
+  const saveBooking = new CreateBooking(reservationService, placesService)
   saveBooking.execute({
     dateStart: new Date('2024-01-01'),
     dateEnd: new Date('2024-01-02'),
     personName: 'HeyMan',
-    id: '1'
+    id: '1',
+    placeId: '1'
   })
   saveBooking.execute({
     dateStart: new Date('2024-01-03'),
     dateEnd: new Date('2024-01-04'),
     personName: 'HeyMan',
-    id: '1'
+    id: '1',
+    placeId: '1'
   })
-  expect(reservationService.listBookings().get()).toEqual([
-    {
+  expect(reservationService.listBookings('1').get()).toEqual([
+    expect.objectContaining({
       id: '1',
       dateStart: new Date('2024-01-03'),
       dateEnd: new Date('2024-01-04'),
       personName: 'HeyMan'
-    }
+    })
   ])
 })
 
 
 test('should save booking when there is no conflict', () => {
   const reservationService = new MemoryReservationsService()
-  const saveBooking = new CreateBooking(reservationService)
+  const placesService = new MemoryPlacesService([
+    new Place('1', 'Place 1', [], 'https://via.placeholder.com/150', 200)
+  ])
+  const saveBooking = new CreateBooking(reservationService, placesService)
   saveBooking.execute({
     dateStart: new Date('2024-01-01'),
     dateEnd: new Date('2024-01-02'),
     personName: 'HeyMan',
-    id: '1'
+    id: '1',
+    placeId: '1'
   })
   saveBooking.execute({
     dateStart: new Date('2024-01-03'),
     dateEnd: new Date('2024-01-04'),
     personName: 'HeyMan',
-    id: '2'
+    id: '2',
+    placeId: '1'
   })
 
-  expect(reservationService.listBookings().get()).toEqual([
-    {
+  expect(reservationService.listBookings('1').get()).toEqual([
+    expect.objectContaining({
       id: '1',
       dateStart: new Date('2024-01-01'),
       dateEnd: new Date('2024-01-02'),
-      personName: 'HeyMan'
-    },
-    {
+      personName: 'HeyMan', 
+    }),
+    expect.objectContaining({
       id: '2',
       dateStart: new Date('2024-01-03'),
       dateEnd: new Date('2024-01-04'),
       personName: 'HeyMan'
-    }
+    })
   ])
 })
 
 test('should not save booking when there is conflict', () => {
   const reservationService = new MemoryReservationsService()
-  const saveBooking = new CreateBooking(reservationService)
+  const placesService = new MemoryPlacesService([
+    new Place('1', 'Place 1', [], 'https://via.placeholder.com/150', 200)
+  ])
+  const saveBooking = new CreateBooking(reservationService, placesService)
   saveBooking.execute({
     dateStart: new Date('2024-01-01'),
     dateEnd: new Date('2024-01-02'),
     personName: 'HeyMan',
-    id: '1'
+    id: '1',
+    placeId: '1'
   })
   expect(() => saveBooking.execute({
     dateStart: new Date('2024-01-02'),
     dateEnd: new Date('2024-01-03'),
     personName: 'HeyMan',
-    id: '2'
+    id: '2',
+    placeId: '1'
   })).toThrow(new DateOverlapError())
 })
 
 test('should remove booking', () => {
   const reservationService = new MemoryReservationsService()
-  const saveBooking = new CreateBooking(reservationService)
+  const placesService = new MemoryPlacesService([
+    new Place('1', 'Place 1', [], 'https://via.placeholder.com/150', 200)
+  ])
+  const saveBooking = new CreateBooking(reservationService, placesService)
   saveBooking.execute({
     dateStart: new Date('2024-01-01'),
     dateEnd: new Date('2024-01-02'),
     personName: 'HeyMan',
-    id: '1'
+    id: '1',
+    placeId: '1'
   })
   saveBooking.execute({
     dateStart: new Date('2024-01-03'),
     dateEnd: new Date('2024-01-04'),
     personName: 'HeyMan',
-    id: '2'
+    id: '2',
+    placeId: '1'
   })
   reservationService.removeBooking('1')
 })
@@ -106,7 +129,8 @@ function helpCreateBookings (reservationService: ReservationsService, dates: { s
       dateEnd: date.end,
       dateStart: date.start,
       personName: 'HeyMan',
-      id: reservationService.getNextReservationCode()
+      id: reservationService.getNextReservationCode(),
+      place: new Place('1', 'Place 1', [], 'https://via.placeholder.com/150', 200)
     })
   }
 }
@@ -183,7 +207,7 @@ describe('ListBookings reactive usecase', () => {
 
     const listBookings = new ListBookings(reservationService)
 
-    const bookingsReative = listBookings.execute()
+    const bookingsReative = listBookings.execute('1')
 
     expect(bookingsReative.get()).toEqual([
       expect.objectContaining(
@@ -207,7 +231,8 @@ describe('ListBookings reactive usecase', () => {
       dateStart: new Date('2024-05-07'),
       dateEnd: new Date('2024-05-08'),
       personName: 'HeyMan',
-      id: '3'
+      id: '3',
+      place: new Place('1', 'Place 1', [], 'https://via.placeholder.com/150', 200)
     })
 
     expect(fn).toHaveBeenCalledTimes(1)
