@@ -70,9 +70,7 @@ export class MemoryReservationsService implements ReservationsService {
   listBookings(placeId: string): ReactiveValue<Booking[]> {
     const reactiveFiltered = new ReactiveValue([...this.bookings.values()].filter(booking => booking.place.id === placeId))
     this.reactiveBookings.subscribe((list) => {
-      console.log('root list', list)
       const filtered = list.filter(booking => booking.place.id === placeId)
-      console.log('root filtered', filtered)
       reactiveFiltered.set(filtered)
     })
     return reactiveFiltered;

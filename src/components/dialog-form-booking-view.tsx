@@ -23,11 +23,11 @@ import { Calendar as CalendarInput } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EditBooking } from "@/domain/usecases/EditBooking";
-import { CreateBooking } from "@/domain/usecases/SaveBooking";
-import { placesService, reservationsService } from "@/store/state";
+import { CreateBooking } from "@/domain/usecases/CreateBooking";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckCalendarDisableBooking } from "@/domain/usecases/CheckCalendarDisableBooking";
 import { useDialogFormBooking } from "@/context/booking-dialog";
+import { placesService, reservationsService } from "@/store/state";
 
 const editBooking = new EditBooking(reservationsService, placesService);
 const createBooking = new CreateBooking(reservationsService, placesService);
