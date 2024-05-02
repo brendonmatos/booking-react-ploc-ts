@@ -4,4 +4,5 @@ export type SaveBookingDto = {
   dateStart: Date;
   dateEnd: Date;
   id?: string;
+  placeId: string;
 };

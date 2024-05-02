@@ -5,7 +5,7 @@ export class ListBookings{
     private reservationsService: ReservationsService,
   ) { }
 
-  execute() {
-    return this.reservationsService.listBookings()
+  execute(placeId: string) {
+    return this.reservationsService.listBookings(placeId);
   }
 }

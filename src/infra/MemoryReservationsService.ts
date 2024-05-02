@@ -8,8 +8,6 @@ export class MemoryReservationsService implements ReservationsService {
   bookings: Map<string, Booking> = new Map();
   reactiveBookings: ReactiveValue<Booking[]> = new ReactiveValue([] as Booking[]);
 
-  constructor() { }
-
   findBookingById(id: string): Booking | undefined {
     return this.bookings.get(id);
   }
@@ -21,13 +19,11 @@ export class MemoryReservationsService implements ReservationsService {
 
   removeBooking(id: string): void {
     this.bookings.delete(id);
-
     this.reactiveBookings.set([...this.bookings.values()]);
   }
 
   getBookingBeforeAndAfter(date: Date, exceptBookingId?: string): { before: Booking | undefined; after: Booking | undefined; } {
     const result: { before: Booking | undefined; after: Booking | undefined; } = { before: undefined, after: undefined };
-
 
     const bookings = Array.from(this.bookings.values())
       .filter(booking => booking.id !== exceptBookingId)  
@@ -71,7 +67,14 @@ export class MemoryReservationsService implements ReservationsService {
     return `R${date.getFullYear()}${date.getMonth().toString().padStart(2, '0')}${date.getDate()}-${nextBookingId.toString().padStart(4, '0')}`;
   }
 
-  listBookings(): ReactiveValue<Booking[]> {
-    return this.reactiveBookings;
+  listBookings(placeId: string): ReactiveValue<Booking[]> {
+    const reactiveFiltered = new ReactiveValue([...this.bookings.values()].filter(booking => booking.place.id === placeId))
+    this.reactiveBookings.subscribe((list) => {
+      console.log('root list', list)
+      const filtered = list.filter(booking => booking.place.id === placeId)
+      console.log('root filtered', filtered)
+      reactiveFiltered.set(filtered)
+    })
+    return reactiveFiltered;
   }
 }

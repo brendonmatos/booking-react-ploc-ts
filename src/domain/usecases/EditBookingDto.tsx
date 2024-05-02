@@ -4,4 +4,5 @@ export type EditBookingDto = {
   personName: string;
   dateStart: Date;
   dateEnd: Date;
+  placeId: string;
 };

@@ -22,3 +22,9 @@ export class BookingNotFoundError extends DomainError {
   }
 }
 
+export class PlaceNotFoundError extends DomainError {
+  constructor() {
+    super('Place not found error. The place does not exist.');
+  }
+}
+
