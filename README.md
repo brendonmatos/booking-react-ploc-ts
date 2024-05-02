@@ -8,11 +8,11 @@
 
 ## Running project
 
-![video](./src/assets/Bookings.gif)]
+<img src="./src/assets/Bookings.gif" width=400>
 
 ## Running project tests
 
-![image](./src/assets/BookingsTest.png)]
+<img src="./src/assets/BookingsTest.png">
 
 ## Architecture
 
