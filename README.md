@@ -23,7 +23,8 @@ https://github.com/brendonmatos/booking-react-ploc-ts/assets/11252654/e96b8f52-5
 
 ## Running project tests
 
-<img src="./src/assets/BookingsTest.png">
+![image](https://github.com/brendonmatos/booking-react-ploc-ts/assets/11252654/88166976-7226-4c42-83d3-8c2f54ebebd8)
+
 
 ## Architecture
 
