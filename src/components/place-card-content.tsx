@@ -27,12 +27,9 @@ export function PlaceCardContent({
 					"rounded-lg aspect-square h-[200px]": orientation === "horizontal",
 				})}
 				style={{ backgroundImage: `url(${place.image})` }}
-			></div>
+			/>
 			<CardContent className="p-4 flex flex-col items-start justify-center ">
-				<CardContentFlex
-					place={place}
-					orientation={orientation}
-				></CardContentFlex>
+				<CardContentFlex place={place} orientation={orientation} />
 				{children}
 			</CardContent>
 		</div>

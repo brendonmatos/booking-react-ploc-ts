@@ -16,7 +16,7 @@ export default function Layout({ children }: ExamplesLayoutProps) {
 					<div className="flex h-16 items-center px-4">
 						<Button variant="outline" role="combobox" className={cn("")}>
 							<Avatar className="mr-2 h-5 w-5">
-								<AvatarImage src={`https://avatar.vercel.sh/personal.png`} />
+								<AvatarImage src={"https://avatar.vercel.sh/personal.png"} />
 								<AvatarFallback>SC</AvatarFallback>
 							</Avatar>
 							<span className="truncate">The Hotel Booking</span>
